@@ -26,7 +26,7 @@ export default function LandingPage() {
 					}}
 					description="Create, manage, and share queues online. Perfect for events, customer service, and any situation where you need to organize people efficiently."
 					ctaText="Start for free"
-					ctaHref="/login"
+					ctaHref="/dashboard"
 					bottomImage={{
 						light: "https://www.launchuicomponents.com/app-light.png",
 						dark: "https://www.launchuicomponents.com/app-dark.png",

@@ -29,11 +29,11 @@ export default function RootLayout({
     <ConvexAuthNextjsServerProvider>
 		<html lang="en">
 			<body
-				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+				className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
 			>
         <ConvexClientProvider>
           <Navbar />
-          <main>
+          <main className="grow">
           {children}
           </main>
         </ConvexClientProvider>
