@@ -16,6 +16,7 @@ import type {
 import type * as auth from "../auth.js";
 import type * as http from "../http.js";
 import type * as queue from "../queue.js";
+import type * as queueItems from "../queueItems.js";
 import type * as queueMembers from "../queueMembers.js";
 import type * as user from "../user.js";
 
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   http: typeof http;
   queue: typeof queue;
+  queueItems: typeof queueItems;
   queueMembers: typeof queueMembers;
   user: typeof user;
 }>;

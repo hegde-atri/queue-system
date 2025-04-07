@@ -20,11 +20,10 @@ const schema = defineSchema({
 		queueId: v.id("queues"),
 		name: v.optional(v.string()),
 		time: v.optional(v.string()),
-		ready: v.boolean(),
+		ready: v.optional(v.boolean()),
 		priority: v.optional(v.boolean()),
 		user: v.optional(v.id("users")),
-		createdAt: v.string(),
-		updatedAt: v.string(),
+		joinedAt: v.string(),
 	}),
 	bookmarks: defineTable({
 		queueId: v.id("queues"),

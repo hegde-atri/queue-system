@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query  } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const createQueue = mutation({
@@ -43,7 +43,7 @@ export const getQueue = query({
 		}
 
 		const queue = await ctx.db.get(args.id);
-    const queueMembers = await ctx.db.query
+		const queueMembers = await ctx.db.query;
 		if (!queue || queue.owner !== userId) {
 			throw new Error("Queue not found or not owned by user");
 		}
