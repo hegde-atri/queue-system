@@ -19,6 +19,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import Link from "next/link";
 
 export default function DashboardPage() {
 	const queues = useQuery(api.queue.getQueues);
@@ -53,11 +54,12 @@ function QueueCard({ queue }: { queue: Doc<"queues"> }) {
 	return (
 		<motion.div
 			key={queue._id}
-			initial={{ opacity: 0, scale: 0.9 }}
-			animate={{ opacity: 1, scale: 1 }}
-			exit={{ opacity: 0, scale: 0.9 }}
+			initial={{ opacity: 0, scale: 0.9, y: 20 }}
+			animate={{ opacity: 1, scale: 1, y: 0 }}
+			exit={{ opacity: 0, scale: 0.9, y: 20 }}
 			transition={{ duration: 0.2 }}
 		>
+			<Link href={`/queues/${queue._id}`}>
 				<Card className="flex flex-col bg-white shadow-md rounded-lg p-4 gap-2">
 					<h2 className="text-xl font-semibold">{queue.title}</h2>
 					<p className="text-gray-500">{queue.description}</p>
@@ -89,6 +91,7 @@ function QueueCard({ queue }: { queue: Doc<"queues"> }) {
 						</AlertDialog>
 					</div>
 				</Card>
+			</Link>
 		</motion.div>
 	);
 }
