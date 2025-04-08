@@ -291,7 +291,7 @@ export default function LandingPage() {
 									Ready to streamline your queue management?
 								</h2>
 								<p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed mx-auto">
-									Join thousands of organizations that use QueueFlow to manage
+									Join thousands of people that use QueueFlow to manage
 									their queues efficiently.
 								</p>
 							</div>
