@@ -37,7 +37,7 @@ const formSchema = z.object({
 
 export function NewQueue() {
   const [open, setOpen] = useState(false);
-	const createQueue = useMutation(api.queueItems.createQueueItem);
+	const createQueue = useMutation(api.queue.createQueue);
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
