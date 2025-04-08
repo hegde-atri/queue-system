@@ -68,3 +68,23 @@ export const deleteQueue = mutation({
 		await ctx.db.delete(args.queueId);
 	},
 });
+
+export const updateQueue = mutation({
+	args: { id: v.id("queues"), title: v.string(), description: v.string() },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			throw new Error("User not authenticated");
+		}
+
+		const queue = await ctx.db.get(args.id);
+		if (!queue || queue.owner !== userId) {
+			throw new Error("Queue not found or not owned by user");
+		}
+
+		await ctx.db.patch(args.id, {
+			title: args.title,
+			description: args.description,
+		});
+	}
+});
