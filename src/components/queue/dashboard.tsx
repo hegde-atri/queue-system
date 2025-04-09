@@ -4,14 +4,9 @@ import { api } from "../../../convex/_generated/api";
 import { Doc, Id } from "../../../convex/_generated/dataModel";
 
 export default function QueueDashboard({ id }: { id: string }) {
-	var queue;
-	var queueItems;
-
-	try {
-		queue = useQuery(api.queue.getQueue, { id: id as Id<"queues"> });
-	} catch {
-		return <div>no queue found</div>;
-	}
+	const queue = useQuery(api.queue.getQueue, { id: id as Id<"queues"> }) || undefined;
+	const queueItems = useQuery(api.queueItems.getQueueItems, { id: id as Id<"queues"> }) || [];
+	const user = useQuery(api.user.currentUser);
 
 	// Loading state
 	if (queue === undefined) {
@@ -22,16 +17,10 @@ export default function QueueDashboard({ id }: { id: string }) {
 	if (queue === null) {
 		return <div className="p-4">Queue not found</div>;
 	}
-
-	try {
-		queueItems = useQuery(api.queueItems.getQueueItems, { id: queue._id });
-	} catch {
-		return (
-			<div>
-				<h1>No members</h1>
-				<p>Share the URL to start</p>
-			</div>
-		);
+	
+	if (queueItems?.length <= 0 && queue.owner === user!._id) {
+		console.log(queueItems)
+		return <NoQueueMembers />
 	}
 
 	// Render the queue
@@ -83,6 +72,7 @@ import {
 	Clock,
 	Users,
 } from "lucide-react";
+import NoQueueMembers from "./no-members";
 
 // Sample people in queue
 const initialPeople = [

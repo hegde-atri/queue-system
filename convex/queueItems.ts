@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
@@ -13,24 +13,19 @@ export const getQueueItems = query({
     if (!queue) {
       throw new Error("Queue not found");
     }
-    const member = await ctx.db
-      .query("queueMembers")
-      .filter((q) =>
-        q.and(
-          q.eq(q.field("queueId"), args.id),
-          q.eq(q.field("user"), userId)
-        )
-    )
-      .first();
-    if (!member) {
-      throw new Error("You are not a member of this queue");
-    }
 
+    // if (!member && queue.owner != userId) {
+    //   throw new Error("You are not a member of this queue");
+    // }
 
     const queueItems = await ctx.db
       .query("queueItems")
       .filter((q) => q.eq(q.field("queueId"), args.id))
       .collect();
+
+    if (!queueItems) {
+      throw new Error("Queue items not found");
+    }
 
     return queueItems;
   },

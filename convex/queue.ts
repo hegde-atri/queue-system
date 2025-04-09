@@ -43,10 +43,22 @@ export const getQueue = query({
 		}
 
 		const queue = await ctx.db.get(args.id);
-		const queueMembers = await ctx.db.query;
-		if (!queue || queue.owner !== userId) {
-			throw new Error("Queue not found or not owned by user");
+
+		if (!queue) {
+			throw new Error("Queue not found");
 		}
+
+		// const member = await ctx.db
+		// 	.query("queueMembers")
+		// 	.filter((q) =>
+		// 		q.and(q.eq(q.field("queueId"), args.id), q.eq(q.field("user"), userId))
+		// 	)
+		// 	.first();
+		// if (!member) {
+		// 	throw new Error("You are not a member of this queue");
+		// }
+
+		// check if user is member of the queue
 
 		return queue;
 	},
@@ -86,5 +98,5 @@ export const updateQueue = mutation({
 			title: args.title,
 			description: args.description,
 		});
-	}
+	},
 });
