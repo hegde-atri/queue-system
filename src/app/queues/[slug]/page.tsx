@@ -1,4 +1,4 @@
-import QueueDashboard from "@/components/queue/dashboard";
+import QueueDashboard from "@/components/queue/dashboard-page";
 
 export default async function QueuePage({
 	params,
