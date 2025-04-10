@@ -57,16 +57,33 @@ export function AdminQueueCard({
 	queue: Doc<"queues">;
 	people: Doc<"queueItems">[];
 }) {
-	const [isEditing, setIsEditing] = useState(false);
 	const [newTitle, setNewTitle] = useState(queue.title);
 	const [newDescription, setNewDescription] = useState(queue.description);
+	const [isSaving, setIsSaving] = useState(false);
+	
+	const updateQueue = useMutation(api.queue.updateQueue);
+	
+	const handleSaveChanges = async () => {
+		try {
+			setIsSaving(true);
+			await updateQueue({
+				id: queue._id,
+				title: newTitle,
+				description: newDescription,
+			});
+			toast.success("Queue updated successfully");
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Failed to update queue");
+		} finally {
+			setIsSaving(false);
+		}
+	};
 
 	return (
 		<Card>
 			<CardHeader className="pb-3">
 				<div className="flex items-start justify-between">
 					<div className="space-y-1 flex-1">
-						// Create morphing dialog here
 						<MorphingDialog
 							transition={{
 								type: "spring",
@@ -78,28 +95,23 @@ export function AdminQueueCard({
 								style={{
 									borderRadius: "12px",
 								}}
-								className="flex max-w-[270px] flex-col overflow-hidden border border-zinc-950/10 bg-white dark:border-zinc-50/10 dark:bg-zinc-900"
+								className="flex flex-col overflow-hidden border border-zinc-950/10 bg-white dark:border-zinc-50/10 dark:bg-zinc-900"
 							>
-								<MorphingDialogImage
-									src="/eb-27-lamp-edouard-wilfrid-buquet.jpg"
-									alt="A desk lamp designed by Edouard Wilfrid Buquet in 1925. It features a double-arm design and is made from nickel-plated brass, aluminium and varnished wood."
-									className="h-48 w-full object-cover"
-								/>
 								<div className="flex grow flex-row items-end justify-between px-3 py-2">
-									<div>
-										<MorphingDialogTitle className="text-zinc-950 dark:text-zinc-50">
-											EB27
+									<div className="w-full">
+										<MorphingDialogTitle className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">
+											{queue.title}
 										</MorphingDialogTitle>
-										<MorphingDialogSubtitle className="text-zinc-700 dark:text-zinc-400">
-											Edouard Wilfrid Buquet
+										<MorphingDialogSubtitle className="text-sm text-zinc-700 dark:text-zinc-400 line-clamp-2">
+											{queue.description}
 										</MorphingDialogSubtitle>
 									</div>
 									<button
 										type="button"
 										className="relative ml-1 flex h-6 w-6 shrink-0 scale-100 select-none appearance-none items-center justify-center rounded-lg border border-zinc-950/10 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 focus-visible:ring-2 active:scale-[0.98] dark:border-zinc-50/10 dark:bg-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-50 dark:focus-visible:ring-zinc-500"
-										aria-label="Open dialog"
+										aria-label="Edit queue"
 									>
-										<PlusIcon size={12} />
+										<Edit size={12} />
 									</button>
 								</div>
 							</MorphingDialogTrigger>
@@ -110,48 +122,71 @@ export function AdminQueueCard({
 									}}
 									className="pointer-events-auto relative flex h-auto w-full flex-col overflow-hidden border border-zinc-950/10 bg-white dark:border-zinc-50/10 dark:bg-zinc-900 sm:w-[500px]"
 								>
-									<MorphingDialogImage
-										src="/eb-27-lamp-edouard-wilfrid-buquet.jpg"
-										alt="A desk lamp designed by Edouard Wilfrid Buquet in 1925. It features a double-arm design and is made from nickel-plated brass, aluminium and varnished wood."
-										className="h-full w-full"
-									/>
 									<div className="p-6">
-										<MorphingDialogTitle className="text-2xl text-zinc-950 dark:text-zinc-50">
-											EB27
-										</MorphingDialogTitle>
-										<MorphingDialogSubtitle className="text-zinc-700 dark:text-zinc-400">
-											Edouard Wilfrid Buquet
-										</MorphingDialogSubtitle>
+										<div className="mb-4">
+											<label htmlFor="title" className="text-sm font-medium mb-1 block">
+												Queue Title
+											</label>
+											<Input
+												id="title"
+												value={newTitle}
+												onChange={(e) => setNewTitle(e.target.value)}
+												className="w-full"
+											/>
+										</div>
+										
+										<div className="mb-4">
+											<label htmlFor="description" className="text-sm font-medium mb-1 block">
+												Description
+											</label>
+											<Textarea
+												id="description"
+												value={newDescription}
+												onChange={(e) => setNewDescription(e.target.value)}
+												className="w-full min-h-[100px]"
+											/>
+										</div>
+										
 										<MorphingDialogDescription
 											disableLayoutAnimation
 											variants={{
-												initial: { opacity: 0, scale: 0.8, y: 100 },
+												initial: { opacity: 0, scale: 0.8, y: 20 },
 												animate: { opacity: 1, scale: 1, y: 0 },
-												exit: { opacity: 0, scale: 0.8, y: 100 },
+												exit: { opacity: 0, scale: 0.8, y: 20 },
 											}}
+											className="mt-4"
 										>
-											<p className="mt-2 text-zinc-500 dark:text-zinc-500">
-												Little is known about the life of Édouard-Wilfrid
-												Buquet. He was born in France in 1866, but the time and
-												place of his death is unfortunately a mystery.
-											</p>
-											<p className="text-zinc-500">
-												Research conducted in the 1970s revealed that he’d
-												designed the “EB 27” double-arm desk lamp in 1925,
-												handcrafting it from nickel-plated brass, aluminium and
-												varnished wood.
-											</p>
-											<a
-												className="mt-2 inline-flex text-zinc-500 underline"
-												href="https://www.are.na/block/12759029"
-												target="_blank"
-												rel="noopener noreferrer"
-											>
-												Are.na block
-											</a>
+											<div className="flex justify-end gap-2">
+												<Button
+													variant="outline" 
+													onClick={() => {
+														// Reset form
+														setNewTitle(queue.title);
+														setNewDescription(queue.description);
+													}}
+												>
+													Reset
+												</Button>
+												<Button 
+													onClick={handleSaveChanges}
+													disabled={isSaving}
+												>
+													{isSaving ? (
+														<>
+															<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+															Saving...
+														</>
+													) : (
+														<>
+															<Save className="mr-2 h-4 w-4" />
+															Save Changes
+														</>
+													)}
+												</Button>
+											</div>
 										</MorphingDialogDescription>
 									</div>
-									<MorphingDialogClose className="text-zinc-50" />
+									<MorphingDialogClose className="absolute top-4 right-4 text-zinc-500" />
 								</MorphingDialogContent>
 							</MorphingDialogContainer>
 						</MorphingDialog>
@@ -174,8 +209,8 @@ export function AdminQueueCard({
 							priority
 						</span>
 					</div>
-					{/* TODO: wait time
-           <div className="flex items-center">
+					 {/* TODO: wait time
+					<div className="flex items-center">
 						<Clock className="mr-2 h-4 w-4 text-muted-foreground" />
 						<span>
 							Average wait:{" "}
