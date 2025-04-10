@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as auth from "../auth.js";
+import type * as bookmark from "../bookmark.js";
 import type * as http from "../http.js";
 import type * as queue from "../queue.js";
 import type * as queueItems from "../queueItems.js";
@@ -30,6 +31,7 @@ import type * as user from "../user.js";
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  bookmark: typeof bookmark;
   http: typeof http;
   queue: typeof queue;
   queueItems: typeof queueItems;

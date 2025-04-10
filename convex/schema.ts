@@ -19,7 +19,7 @@ const schema = defineSchema({
 	queueItems: defineTable({
 		queueId: v.id("queues"),
 		name: v.optional(v.string()),
-		time: v.optional(v.string()),
+		notes: v.optional(v.string()),
 		ready: v.optional(v.boolean()),
 		priority: v.optional(v.boolean()),
 		user: v.optional(v.id("users")),

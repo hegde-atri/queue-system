@@ -67,7 +67,7 @@ export const getQueueItem = query({
 });
 
 export const createQueueItem = mutation({
-  args: { id: v.id("queues"), name: v.optional(v.string()), time: v.optional(v.string()), ready: v.optional(v.boolean()), priority: v.optional(v.boolean()), user: v.optional(v.id("users")), joinedAt: v.string() },
+  args: { id: v.id("queues"), name: v.optional(v.string()), notes: v.optional(v.string()), ready: v.optional(v.boolean()), priority: v.optional(v.boolean()), user: v.optional(v.id("users")), joinedAt: v.string() },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
@@ -98,7 +98,7 @@ export const createQueueItem = mutation({
     const queueItem = await ctx.db.insert("queueItems", {
       queueId: args.id,
       name: args.name,
-      time: args.time,
+      notes: args.notes,
       ready: false,
       priority: false,
       user: userId,
@@ -110,7 +110,7 @@ export const createQueueItem = mutation({
 });
 
 export const updateQueueItem = mutation({
-  args: { id: v.id("queueItems"), name: v.optional(v.string()), time: v.optional(v.string()), ready: v.optional(v.boolean()), priority: v.optional(v.boolean()), user: v.optional(v.id("users")), joinedAt: v.string() },
+  args: { id: v.id("queueItems"), name: v.optional(v.string()), notes: v.optional(v.string()), ready: v.optional(v.boolean()), priority: v.optional(v.boolean()), user: v.optional(v.id("users")), joinedAt: v.string() },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
@@ -145,7 +145,7 @@ export const updateQueueItem = mutation({
 
     await ctx.db.patch(args.id, {
       name: args.name,
-      time: args.time,
+      notes: args.notes,
       ready: args.ready,
       priority: args.priority,
       user: args.user,
@@ -188,5 +188,84 @@ export const deleteQueueItem = mutation({
       throw new Error("You are not an admin of this queue");
     }
     await ctx.db.delete(args.id);
+  }
+});
+
+export const joinQueue = mutation({
+  args: { queueId: v.id("queues"), notes: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    // Verify the queue exists
+    const queue = await ctx.db.get(args.queueId);
+    if (!queue) {
+      throw new Error("Queue not found");
+    }
+
+    // Get the user's information to include their name
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new Error("User information not found");
+    }
+
+    // Check if user is already in the queue
+    const existingQueueItem = await ctx.db
+      .query("queueItems")
+      .filter((q) => 
+        q.and(
+          q.eq(q.field("queueId"), args.queueId),
+          q.eq(q.field("user"), userId)
+        )
+      )
+      .first();
+
+    if (existingQueueItem) {
+      throw new Error("You are already in this queue");
+    }
+
+    // Create a new queue item for the user
+    const queueItem = await ctx.db.insert("queueItems", {
+      queueId: args.queueId,
+      name: user.name,
+      notes: args.notes,
+      ready: false,
+      priority: false,
+      user: userId,
+      joinedAt: new Date().toISOString(),
+    });
+
+    return queueItem;
+  }
+});
+
+export const isUserInQueue = query({
+  args: { queueId: v.id("queues") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    // Verify the queue exists
+    const queue = await ctx.db.get(args.queueId);
+    if (!queue) {
+      throw new Error("Queue not found");
+    }
+
+    // Check if user is in the queue
+    const queueItem = await ctx.db
+      .query("queueItems")
+      .filter((q) => 
+        q.and(
+          q.eq(q.field("queueId"), args.queueId),
+          q.eq(q.field("user"), userId)
+        )
+      )
+      .first();
+
+    return queueItem !== null;
   }
 });
