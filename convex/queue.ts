@@ -100,3 +100,46 @@ export const updateQueue = mutation({
 		});
 	},
 });
+
+export const getQueueWithItemsAndOwner = query({
+	args: { id: v.id("queues") },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			throw new Error("User not authenticated");
+		}
+
+		// Get the queue
+		const queue = await ctx.db.get(args.id);
+		if (!queue) {
+			throw new Error("Queue not found");
+		}
+
+		// Get the queue items
+		const queueItems = await ctx.db
+			.query("queueItems")
+			.filter((q) => q.eq(q.field("queueId"), args.id))
+			.collect();
+
+		// Get the queue members
+		const queueMembers = await ctx.db
+			.query("queueMembers")
+			.filter((q) => q.eq(q.field("queueId"), args.id))
+			.collect();
+
+		// Get the owner's name
+		const owner = await ctx.db.get(queue.owner);
+
+		if (!owner) {
+			throw new Error("Queue owner not found");
+		}
+
+		// Return the combined data
+		return {
+			queue,
+			queueMembers,
+			queueItems,
+			ownerName: owner.name,
+		};
+	},
+});
