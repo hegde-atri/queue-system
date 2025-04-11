@@ -26,6 +26,8 @@
     "motion": "^12.6.3",
     "next": "15.2.4",
     "next-themes": "^0.4.6",
+    "posthog-js": "^1.235.5",
+    "posthog-node": "^4.11.3",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -38,9 +40,9 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/qrcode": "^1.5.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

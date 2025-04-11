@@ -5,6 +5,7 @@ import { ConvexClientProvider } from "./ConvexClientProvider";
 import Navbar from "@/components/navbar";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { Toaster } from "sonner";
+import { PostHogProvider } from "@/components/PostHogProvider";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -27,20 +28,20 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-    <ConvexAuthNextjsServerProvider>
-		<html lang="en">
-			<body
-				className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
-			>
-        <ConvexClientProvider>
-          <Navbar />
-          <main className="grow">
-          {children}
-          </main>
-					<Toaster richColors closeButton  />
-        </ConvexClientProvider>
-			</body>
-		</html>
-    </ConvexAuthNextjsServerProvider>
+		<ConvexAuthNextjsServerProvider>
+			<html lang="en">
+				<body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
+					<ConvexClientProvider>
+						<PostHogProvider>
+							<Navbar />
+							<main className="grow">
+								{children}
+							</main>
+							<Toaster richColors closeButton />
+						</PostHogProvider>
+					</ConvexClientProvider>
+				</body>
+			</html>
+		</ConvexAuthNextjsServerProvider>
 	);
 }
