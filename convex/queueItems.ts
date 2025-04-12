@@ -280,3 +280,38 @@ export const isUserInQueue = query({
 		return queueItem !== null;
 	},
 });
+
+export const leaveQueue = mutation({
+	args: { queueId: v.id("queues") },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			throw new Error("User not authenticated");
+		}
+
+		// Verify the queue exists
+		const queue = await ctx.db.get(args.queueId);
+		if (!queue) {
+			throw new Error("Queue not found");
+		}
+
+		// Find the user's queue item
+		const queueItem = await ctx.db
+			.query("queueItems")
+			.filter((q) =>
+				q.and(
+					q.eq(q.field("queueId"), args.queueId),
+					q.eq(q.field("user"), userId)
+				)
+			)
+			.first();
+
+		if (!queueItem) {
+			throw new Error("You are not in this queue");
+		}
+
+		// Remove the user from the queue
+		await ctx.db.delete(queueItem._id);
+		return queueItem._id;
+	},
+});

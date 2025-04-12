@@ -60,9 +60,9 @@ export function AdminQueueCard({
 	const [newTitle, setNewTitle] = useState(queue.title);
 	const [newDescription, setNewDescription] = useState(queue.description);
 	const [isSaving, setIsSaving] = useState(false);
-	
+
 	const updateQueue = useMutation(api.queue.updateQueue);
-	
+
 	const handleSaveChanges = async () => {
 		try {
 			setIsSaving(true);
@@ -73,7 +73,9 @@ export function AdminQueueCard({
 			});
 			toast.success("Queue updated successfully");
 		} catch (error) {
-			toast.error(error instanceof Error ? error.message : "Failed to update queue");
+			toast.error(
+				error instanceof Error ? error.message : "Failed to update queue"
+			);
 		} finally {
 			setIsSaving(false);
 		}
@@ -124,7 +126,10 @@ export function AdminQueueCard({
 								>
 									<div className="p-6">
 										<div className="mb-4">
-											<label htmlFor="title" className="text-sm font-medium mb-1 block">
+											<label
+												htmlFor="title"
+												className="text-sm font-medium mb-1 block"
+											>
 												Queue Title
 											</label>
 											<Input
@@ -134,9 +139,12 @@ export function AdminQueueCard({
 												className="w-full"
 											/>
 										</div>
-										
+
 										<div className="mb-4">
-											<label htmlFor="description" className="text-sm font-medium mb-1 block">
+											<label
+												htmlFor="description"
+												className="text-sm font-medium mb-1 block"
+											>
 												Description
 											</label>
 											<Textarea
@@ -146,7 +154,7 @@ export function AdminQueueCard({
 												className="w-full min-h-[100px]"
 											/>
 										</div>
-										
+
 										<MorphingDialogDescription
 											disableLayoutAnimation
 											variants={{
@@ -158,7 +166,7 @@ export function AdminQueueCard({
 										>
 											<div className="flex justify-end gap-2">
 												<Button
-													variant="outline" 
+													variant="outline"
 													onClick={() => {
 														// Reset form
 														setNewTitle(queue.title);
@@ -167,10 +175,7 @@ export function AdminQueueCard({
 												>
 													Reset
 												</Button>
-												<Button 
-													onClick={handleSaveChanges}
-													disabled={isSaving}
-												>
+												<Button onClick={handleSaveChanges} disabled={isSaving}>
 													{isSaving ? (
 														<>
 															<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -209,7 +214,7 @@ export function AdminQueueCard({
 							priority
 						</span>
 					</div>
-					 {/* TODO: wait time
+					{/* TODO: wait time
 					<div className="flex items-center">
 						<Clock className="mr-2 h-4 w-4 text-muted-foreground" />
 						<span>
@@ -450,3 +455,158 @@ export function MemberQueueActionBar({ queue }: { queue: Doc<"queues"> }) {
 }
 
 export function QueueList() {}
+
+export function QueueMembersTable({
+	people,
+	queue,
+	currentUserId,
+}: {
+	people: Doc<"queueItems">[];
+	queue: Doc<"queues">;
+	currentUserId: Id<"users">;
+}) {
+	const [sortField, setSortField] = useState<"name" | "joinedAt">("joinedAt");
+	const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+	const [isLeaving, setIsLeaving] = useState(false);
+
+	const leaveQueueMutation = useMutation(api.queueItems.leaveQueue);
+
+	const handleSort = (field: "name" | "joinedAt") => {
+		if (sortField === field) {
+			setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+		} else {
+			setSortField(field);
+			setSortDirection("asc");
+		}
+	};
+
+	const sortedPeople = [...people].sort((a, b) => {
+		if (sortField === "name") {
+			return sortDirection === "asc"
+				? a.name?.localeCompare(b.name || "") || 0
+				: b.name?.localeCompare(a.name || "") || 0;
+		} else {
+			return sortDirection === "asc"
+				? new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime()
+				: new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime();
+		}
+	});
+
+	const handleLeaveQueue = async () => {
+		try {
+			setIsLeaving(true);
+			await leaveQueueMutation({ queueId: queue._id });
+			toast.success("You have left the queue");
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Failed to leave queue"
+			);
+		} finally {
+			setIsLeaving(false);
+		}
+	};
+
+	const formatJoinedTime = (joinedAt: string) => {
+		const date = new Date(joinedAt);
+		return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+	};
+
+	return (
+		<div className="mt-6">
+			<h3 className="text-lg font-semibold mb-3">Queue Members</h3>
+			<div className="overflow-x-auto">
+				<table className="w-full border-collapse">
+					<thead>
+						<tr className="border-b">
+							<th
+								className="text-left p-2 cursor-pointer hover:bg-gray-50"
+								onClick={() => handleSort("name")}
+							>
+								Name
+								{sortField === "name" && (
+									<span className="ml-1">
+										{sortDirection === "asc" ? "↑" : "↓"}
+									</span>
+								)}
+							</th>
+							<th
+								className="text-left p-2 cursor-pointer hover:bg-gray-50"
+								onClick={() => handleSort("joinedAt")}
+							>
+								Joined At
+								{sortField === "joinedAt" && (
+									<span className="ml-1">
+										{sortDirection === "asc" ? "↑" : "↓"}
+									</span>
+								)}
+							</th>
+							<th className="text-left p-2">Notes</th>
+							<th className="text-left p-2">Status</th>
+							<th className="text-left p-2">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{sortedPeople.length > 0 ? (
+							sortedPeople.map((person) => (
+								<tr key={person._id} className="border-b hover:bg-gray-50">
+									<td className="p-2 font-medium">{person.name}</td>
+									<td className="p-2 text-gray-600">
+										{formatJoinedTime(person.joinedAt)}
+									</td>
+									<td className="p-2 text-gray-600">
+										{person.notes ? (
+											person.notes
+										) : (
+											<span className="text-gray-400">No notes</span>
+										)}
+									</td>
+									<td className="p-2">
+										{person.ready ? (
+											<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+												<CheckCircle className="mr-1 h-3 w-3" /> Ready
+											</span>
+										) : person.priority ? (
+											<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+												<Star className="mr-1 h-3 w-3" /> Priority
+											</span>
+										) : (
+											<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+												<Clock className="mr-1 h-3 w-3" /> Waiting
+											</span>
+										)}
+									</td>
+									<td className="p-2">
+										{person.user === currentUserId &&
+											queue.owner !== currentUserId && (
+												<Button
+													variant="destructive"
+													size="sm"
+													onClick={handleLeaveQueue}
+													disabled={isLeaving}
+												>
+													{isLeaving ? (
+														<>
+															<Loader2 className="mr-1 h-3 w-3 animate-spin" />
+															Leaving...
+														</>
+													) : (
+														"Leave Queue"
+													)}
+												</Button>
+											)}
+									</td>
+								</tr>
+							))
+						) : (
+							<tr>
+								<td colSpan={5} className="p-4 text-center text-gray-500">
+									No one is in the queue yet.
+								</td>
+							</tr>
+						)}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	);
+}
